@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "TPSCharacter.generated.h"
 
+struct FInputActionValue;
+
 UCLASS()
 class TPS_API ATPSCharacter : public ACharacter
 {
@@ -24,6 +26,32 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) 
+	
+		override;
+private:
+	void Input_Move(const FInputActionValue& InputValue);
+	void Input_Turn(const FInputActionValue& InputValue);
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<class UInputMappingContext> IMCDefault;
+	
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<class UInputAction> JumpAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<class UInputAction> MoveAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<class UInputAction> TurnAction;
+	
+	
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class USpringArmComponent> springArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UCameraComponent> camera;
 };
