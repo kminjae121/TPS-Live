@@ -6,9 +6,6 @@
 #include "Animation/AnimInstance.h"
 #include "TPSAnimInstance.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TPS_API UTPSAnimInstance : public UAnimInstance
 {
