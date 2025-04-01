@@ -9,14 +9,15 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/TPSAnimInstance.h"
-
+#include "Engine/SkeletalMeshSocket.h"
+#include "Waepon.h"
 // Sets default values
 ATPSCharacter::ATPSCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> FindMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/_Art/MilitaryCharDark/MW_Style2_Female.MW_Style2_Female'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> FindMesh(TEXT("/Script/Engine.Skeleton'/Game/_Art/MilitaryCharDark/MW_Style2_Male_Skeleton.MW_Style2_Male_Skeleton'"));
 
 
 	if (FindMesh.Succeeded())
@@ -33,6 +34,15 @@ ATPSCharacter::ATPSCharacter()
 
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	camera->SetupAttachment(springArm);
+
+	static ConstructorHelpers::FClassFinder<AWaepon> WeaponClassRef(TEXT
+	("/Script/Engine.Blueprint'/Game/BluePrints/BP_Waepon.BP_Waepon_C'"));
+
+	if (WeaponClassRef.Succeeded())
+	{
+		WeaponClass = WeaponClassRef.Class;
+	}
+
 #pragma region InputSystems
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> 
 		IMCDefaultRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/Actions/IMAC_Default.IMAC_Default'"));
@@ -89,6 +99,8 @@ void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AttachWeapon(WeaponClass);
+
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
@@ -125,6 +137,21 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputCompoenet->BindAction(TurnAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Turn);
 		EnhancedInputCompoenet->BindAction(RunAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Run);
 		EnhancedInputCompoenet->BindAction(FireAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Fire);
+	}
+}
+
+void ATPSCharacter::AttachWeapon(TSubclassOf<class AWaepon> NewWeapon)
+{
+	if (NewWeapon)
+	{
+		EquipWeapon = GetWorld()->SpawnActor<AWaepon>(NewWeapon);
+
+		const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("WeaponSocket");
+
+		if (EquipWeapon && WeaponSocket)
+		{
+			WeaponSocket->AttachActor(EquipWeapon, GetMesh());
+		}
 	}
 }
 
