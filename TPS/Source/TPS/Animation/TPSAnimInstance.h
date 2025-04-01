@@ -16,6 +16,9 @@ public:
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+public : 
+	void PlayFireMontage();
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class ACharacter> Character;
@@ -23,6 +26,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class UCharacterMovementComponent> MovementComponent;
 	
+
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	TObjectPtr<class UAnimMontage> FireMontage;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)

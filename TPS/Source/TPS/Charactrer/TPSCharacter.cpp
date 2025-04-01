@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/TPSAnimInstance.h"
 
 // Sets default values
 ATPSCharacter::ATPSCharacter()
@@ -73,6 +74,14 @@ ATPSCharacter::ATPSCharacter()
 		RunAction = RunActionRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> FireActionRef
+	(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Fire.IA_Fire'"));
+
+	if (FireActionRef.Succeeded())
+	{
+		FireAction = FireActionRef.Object;
+	}
+
 }
 
 // Called when the game starts or when spawned
@@ -115,6 +124,7 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputCompoenet->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Move);
 		EnhancedInputCompoenet->BindAction(TurnAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Turn);
 		EnhancedInputCompoenet->BindAction(RunAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Run);
+		EnhancedInputCompoenet->BindAction(FireAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Fire);
 	}
 }
 
@@ -150,6 +160,16 @@ void ATPSCharacter::Input_Run(const FInputActionValue& InputValue)
 	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
+}
+
+void ATPSCharacter::Input_Fire(const FInputActionValue& InputValue)
+{
+	UTPSAnimInstance* AnimInstance = Cast<UTPSAnimInstance>(GetMesh()->GetAnimInstance());
+
+	if (AnimInstance)
+	{
+		AnimInstance->PlayFireMontage();
 	}
 }
 
