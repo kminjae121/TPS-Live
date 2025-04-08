@@ -2,6 +2,8 @@
 
 
 #include "Waepon.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
 
 // Sets default values
 AWaepon::AWaepon()
@@ -20,12 +22,22 @@ AWaepon::AWaepon()
 		weaponMesh->SetSkeletalMesh(WeaponMeshRef.Object);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> HitEffectRef(
+		TEXT("/Script/Engine.ParticleSystem'/Game/_Art/Effect/Particles/P_HitEffect.P_HitEffect'"));
+
+	if (HitEffectRef.Succeeded())
+	{
+		HitEffect = HitEffectRef.Object;
+	}
+
 }
 
 // Called when the game starts or when spawned
 void AWaepon::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AmomoRemainCount = AmmoMaxCount;
 	
 }
 
@@ -34,5 +46,26 @@ void AWaepon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWaepon::StartFire(TWeakObjectPtr<class ATPSCharacter> OwnerCharaceter)
+{
+}
+
+void AWaepon::StopFire()
+{
+}
+
+void AWaepon::Reloading()
+{
+}
+
+void AWaepon::FinishReloading()
+{
+}
+
+void AWaepon::PlayHitEffect(FTransform HitTransform)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitTransform);
 }
 

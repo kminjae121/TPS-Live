@@ -6,6 +6,8 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
 // Sets default values
 ABullet::ABullet()
 {
@@ -39,6 +41,14 @@ ABullet::ABullet()
 	ProjectileMovementComponent->bRotationFollowsVelocity = false;
 	ProjectileMovementComponent->bShouldBounce = false;
 
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> HitEffectRef(
+		TEXT("/Script/Engine.ParticleSystem'/Game/_Art/Effect/Particles/P_HitEffect.P_HitEffect'"));
+
+	if (HitEffectRef.Succeeded())
+	{
+		HitEffect = HitEffectRef.Object;
+	}
+
 }
 
 // Called when the game starts or when spawned
@@ -46,6 +56,7 @@ void ABullet::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SphereCollision->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
 }
 
 // Called every frame
@@ -67,7 +78,10 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 	if (HitCharacter)
 	{
 		GEngine->AddOnScreenDebugMessage(-1,1.0f,FColor::Red, TEXT("Hit"));
-		Destroy();
 	}
+	FTransform HitTransform;
+	HitTransform.SetLocation(Hit.ImpactPoint);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitTransform);
+		Destroy();
 }
 

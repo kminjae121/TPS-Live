@@ -36,7 +36,7 @@ ATPSCharacter::ATPSCharacter()
 	camera->SetupAttachment(springArm);
 
 	static ConstructorHelpers::FClassFinder<AWaepon> WeaponClassRef(TEXT
-	("/Script/Engine.Blueprint'/Game/BluePrints/BP_Waepon.BP_Waepon_C'"));
+	("/Script/Engine.Blueprint'/Game/BluePrints/Weapon/BP_WeaponRifle.BP_WeaponRifle_C'"));
 
 	if (WeaponClassRef.Succeeded())
 	{
@@ -192,11 +192,26 @@ void ATPSCharacter::Input_Run(const FInputActionValue& InputValue)
 
 void ATPSCharacter::Input_Fire(const FInputActionValue& InputValue)
 {
+	if (EquipWeapon == nullptr)
+		return;
+
+
 	UTPSAnimInstance* AnimInstance = Cast<UTPSAnimInstance>(GetMesh()->GetAnimInstance());
 
-	if (AnimInstance)
+	if (AnimInstance == nullptr)
+		return;
+	
+	bool IsStartFire = InputValue.Get<bool>();
+
+	if (IsStartFire && EquipWeapon->GetAmmoRemainCount() > 0)
 	{
+		EquipWeapon->StartFire(this);
 		AnimInstance->PlayFireMontage();
+	}
+	else
+	{
+		EquipWeapon->StopFire();
+		AnimInstance->StopAllMontages(false);
 	}
 }
 
