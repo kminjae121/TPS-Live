@@ -90,6 +90,13 @@ void AWeapon_Rifle::FireWithProjectile(TWeakObjectPtr<class ATPSCharacter> Owner
 			SpawnBullet->Fire(Direciton);
 		}
 		AmomoRemainCount--;
+
+		if (AmomoRemainCount <= 0)
+		{
+			Character->StopAnimMontage(Character->GetCurrentMontage());
+			StopFire();
+			Character->StartReloading();
+		}
 	}
 }
 
@@ -113,7 +120,7 @@ void AWeapon_Rifle::FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerC
 	CollisionParams.AddIgnoredActor(Character);
 
 	bool HitDetected = GetWorld()->LineTraceSingleByChannel(HitResult,
-		Start, End, ECollisionChannel::ECC_Visibility, CollisionParams);
+		Start, End, ECollisionChannel::ECC_GameTraceChannel2, CollisionParams);
 
 	if (HitDetected)
 	{
@@ -131,6 +138,13 @@ void AWeapon_Rifle::FireWithLineTrace(TWeakObjectPtr<class ATPSCharacter> OwnerC
 
 	}
 	AmomoRemainCount--;
+	if(AmomoRemainCount <= 0)
+	{
+		Character->StopAnimMontage(Character->GetCurrentMontage());
+		StopFire();
+		return;
+	}
+
 #if ENABLE_DRAW_DEBUG
 	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
 	DrawDebugLine(GetWorld(), Start, End, DrawColor, false, 1.0f);

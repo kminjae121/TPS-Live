@@ -50,6 +50,7 @@ void AWaepon::Tick(float DeltaTime)
 
 void AWaepon::StartFire(TWeakObjectPtr<class ATPSCharacter> OwnerCharaceter)
 {
+	
 }
 
 void AWaepon::StopFire()
@@ -58,10 +59,13 @@ void AWaepon::StopFire()
 
 void AWaepon::Reloading()
 {
+	StopFire();
 }
 
 void AWaepon::FinishReloading()
 {
+	
+	AmomoRemainCount = AmmoMaxCount;
 }
 
 void AWaepon::PlayHitEffect(FTransform HitTransform)

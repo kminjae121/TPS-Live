@@ -30,6 +30,10 @@ public:
 	
 		override;
 
+public:
+	void StartReloading();
+	void FinishingReloading();
+
 //Weapon System
 
 public:
@@ -46,6 +50,7 @@ private:
 	void Input_Turn(const FInputActionValue& InputValue);
 	void Input_Run(const FInputActionValue& InputValue);
 	void Input_Fire(const FInputActionValue& InputValue);
+	void Input_Reload(const FInputActionValue& InputValue);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -65,6 +70,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<class UInputAction> FireAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<class UInputAction> ReloadAction;
 	
 	
 protected:
@@ -81,4 +89,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = PlayerStat)
 	float RunSpeed = 600.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Reload")
+	bool bIsReload = false;
 };
