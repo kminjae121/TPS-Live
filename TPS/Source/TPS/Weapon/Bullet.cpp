@@ -8,6 +8,8 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
+#include "Waepon.h"
+#include "Engine/DamageEvents.h"
 // Sets default values
 ABullet::ABullet()
 {
@@ -74,9 +76,18 @@ void ABullet::Fire(const FVector& Direction) const
 void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
+	
+
 	ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
 	if (HitCharacter)
 	{
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		FDamageEvent DamageEvent;
+		if(OwnerCharacter == nullptr)
+			return;
+
+		HitCharacter->TakeDamage(AttackDamage, DamageEvent, OwnerCharacter->GetController(),
+			OwnerCharacter);
 		GEngine->AddOnScreenDebugMessage(-1,1.0f,FColor::Red, TEXT("Hit"));
 	}
 	FTransform HitTransform;

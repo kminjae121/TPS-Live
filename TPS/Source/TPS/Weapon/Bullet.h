@@ -30,6 +30,8 @@ public :
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	FORCEINLINE void SetAttackDamage(float newAttackDamage) { AttackDamage = newAttackDamage; }
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "HitEffect")
 	TObjectPtr<class UParticleSystem> HitEffect;
@@ -48,4 +50,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Properties)
 	float MaxSpeed = 30000.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = Properties)
+	float AttackDamage = 0.0f;
 };

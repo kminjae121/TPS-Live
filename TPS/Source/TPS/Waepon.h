@@ -65,6 +65,9 @@ protected:
 	float FireInterval = 0.1f;
 	UPROPERTY(EditAnywhere, Category = "Properties")
 	float TraceDistance = 1000.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Properties")
+	float AttackDamage = 30.f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Properties")
