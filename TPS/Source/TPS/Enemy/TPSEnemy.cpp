@@ -5,9 +5,11 @@
 #include "Components/CapsuleComponent.h"
 #include "Animation/TPSEnemyAnimInstance.h"
 #include "AI/EnemyAIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
-ATPSEnemy::ATPSEnemy()
+ATPSEnemy::ATPSEnemy() 
 {
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AEnemyAIController::StaticClass();
@@ -18,6 +20,7 @@ ATPSEnemy::ATPSEnemy()
 		TEXT("/Script/Engine.SkeletalMesh'/Game/_Art/Enemy/Model/vampire_a_lusth.vampire_a_lusth'"));
 
 	GetCapsuleComponent()->SetCollisionProfileName("TPSEnemy");
+	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 
 	if (MeshRef.Succeeded())
 	{
@@ -34,8 +37,15 @@ ATPSEnemy::ATPSEnemy()
 void ATPSEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentHp = MaxHp;
+	SetHp(MaxHp);
 	
+
+	UTPSEnemyAnimInstance* AnimInstance = Cast<UTPSEnemyAnimInstance>(GetMesh()->GetAnimInstance());
+
+	if (AnimInstance)
+	{
+		AnimInstance->OnAttackFinished.AddUObject(this, &ATPSEnemy::AttackEnded);
+	}
 }
 
 // Called every frame
@@ -56,9 +66,9 @@ float ATPSEnemy::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACont
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-	CurrentHp -= Damage;
+	SetHp(CurrentHp - Damage);
 
-	if (CurrentHp <= 0)
+	if (CurrentHp <= KINDA_SMALL_NUMBER)
 	{
 		SetDead();
 	}
@@ -67,6 +77,11 @@ float ATPSEnemy::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACont
 		SetDamage();
 	}
 	return Damage;
+}
+
+void ATPSEnemy::SetHp(float NewHp)
+{
+	CurrentHp = FMath::Clamp<float>(NewHp, 0.f, MaxHp);
 }
 
 void ATPSEnemy::SetDamage()
@@ -81,6 +96,12 @@ void ATPSEnemy::SetDamage()
 
 void ATPSEnemy::SetDead()
 {
+	AEnemyAIController* AIController = Cast < AEnemyAIController>(GetController());
+
+	if (AIController)
+	{
+		AIController->StopAI();
+	}
 	UTPSEnemyAnimInstance* AnimInstance = Cast<UTPSEnemyAnimInstance>(GetMesh()->GetAnimInstance());
 
 	if (AnimInstance)
@@ -98,5 +119,63 @@ void ATPSEnemy::SetDead()
 		}
 		),
 		5.f, false);
+}
+
+void ATPSEnemy::Attack()
+{
+	UTPSEnemyAnimInstance* EnemyAnimInstance = Cast<UTPSEnemyAnimInstance>(GetMesh()->GetAnimInstance());
+
+	if (EnemyAnimInstance)
+	{
+		EnemyAnimInstance->PlayAttackMontage();
+		EnemyAnimInstance->OnAttackFinished.AddUObject(this, &ATPSEnemy::AttackEnded);
+	}
+}
+
+void ATPSEnemy::AttackEnded()
+{
+
+}
+
+void ATPSEnemy::AttackHitChedck()
+{
+	FHitResult OutHitResult;
+
+	FCollisionQueryParams Param;
+
+	Param.AddIgnoredActor(this);
+
+	const float AttackRange = 80.f;
+	const float AttackRadius = 50.f;
+	const float AttackDamage = 30.f;
+
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()
+		->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start,
+		End, FQuat::Identity, ECollisionChannel::ECC_EngineTraceChannel3,
+		FCollisionShape::MakeSphere(AttackRadius), Param);
+
+	if (HitDetected)
+	{
+		ACharacter* HitCharacter = Cast<ACharacter>(OutHitResult.GetActor());
+		if (HitCharacter)
+		{
+			FDamageEvent DamageEvent;
+			HitCharacter->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+		}
+	}
+	
+#if  ENABLE_DRAW_DEBUG
+	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight,
+		AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(),DrawColor
+	,false,5.0f);
+#endif 
+
 }
 

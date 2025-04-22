@@ -11,6 +11,8 @@
 #include "Animation/TPSAnimInstance.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Waepon.h"
+
+#include "Components/CapsuleComponent.h"
 // Sets default values
 ATPSCharacter::ATPSCharacter()
 {
@@ -19,7 +21,7 @@ ATPSCharacter::ATPSCharacter()
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> FindMesh(TEXT("/Script/Engine.Skeleton'/Game/_Art/MilitaryCharDark/MW_Style2_Male_Skeleton.MW_Style2_Male_Skeleton'"));
 
-
+	GetCapsuleComponent()->SetCollisionProfileName("TPSPlayer");
 	if (FindMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(FindMesh.Object);
@@ -106,6 +108,8 @@ void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetHp(MaxHp);
+
 	AttachWeapon(WeaponClass);
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -146,6 +150,31 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputCompoenet->BindAction(FireAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Fire);
 		EnhancedInputCompoenet->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Input_Reload);
 	}
+}
+
+float ATPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	SetHp(CurrentHp - DamageAmount);
+
+	if (CurrentHp <= KINDA_SMALL_NUMBER)
+	{
+		SetDead();
+	}
+
+	return DamageAmount;
+}
+
+void ATPSCharacter::SetHp(float newHp)
+{
+	CurrentHp = FMath::Clamp<float>(newHp, 0.0f, MaxHp);
+}
+
+void ATPSCharacter::SetDead()
+{
+	SetActorEnableCollision(false);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 }
 
 void ATPSCharacter::StartReloading()

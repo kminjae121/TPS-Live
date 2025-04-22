@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TPSAttackInterface.h"
 #include "GameFramework/Character.h"
 #include "TPSEnemy.generated.h"
 
 UCLASS()
-class TPS_API ATPSEnemy : public ACharacter
+class TPS_API ATPSEnemy : public ACharacter, public ITPSAttackInterface
 {
 	GENERATED_BODY()
 
@@ -28,14 +29,20 @@ public:
 
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+	void AttackHitChedck() override;
 
 public:
+	void SetHp(float NewHp);
 	void SetDamage();
 	void SetDead();
+	void Attack();
+	void AttackEnded();
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Stat")
 	float CurrentHp = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Stat")
 	float MaxHp = 100.0f;
+
+	// ITPSAttackInterface을(를) 통해 상속됨
 };

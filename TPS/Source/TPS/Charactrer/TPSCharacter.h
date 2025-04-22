@@ -30,6 +30,19 @@ public:
 	
 		override;
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor*
+		DamageCauser);
+
+public:
+	void SetHp(float newHp);
+	void SetDead();
+protected:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float CurrentHp = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHp = 100.0f;
+
 public:
 	void StartReloading();
 	void FinishingReloading();
