@@ -44,5 +44,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Stat")
 	float MaxHp = 100.0f;
 
+	UPROPERTY(VisibleAnywhere, Category = "Stat")
+	TObjectPtr<class UWidgetComponent> HpBarWidgetComponent;
+
+
 	// ITPSAttackInterface을(를) 통해 상속됨
 };
